@@ -16,12 +16,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "bugs": {
     "url": "https://github.com/mishraorosmit/bdam-project/issues"
   },
   "homepage": "https://github.com/mishraorosmit/bdam-project#readme",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^7.0.0"
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.22.3"
   }
 }
