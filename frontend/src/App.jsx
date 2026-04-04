@@ -1,13 +1,7 @@
-import Navbar from "./components/Navbar";
-import AppRoutes from "./routes/AppRoutes";
+import Upload from "./pages/upload";
 
 function App() {
-  return (
-    <div className="bg-[#0A0A0A] min-h-screen text-white">
-      <Navbar />
-      <AppRoutes />
-    </div>
-  );
+  return <Upload />;
 }
 
 export default App;
