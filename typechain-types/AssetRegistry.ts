@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -27,16 +28,51 @@ import type {
   PromiseOrValue,
 } from "./common";
 
+export declare namespace AssetRegistry {
+  export type AssetStruct = {
+    cid: PromiseOrValue<string>;
+    creator: PromiseOrValue<string>;
+    owner: PromiseOrValue<string>;
+    price: PromiseOrValue<BigNumberish>;
+    name: PromiseOrValue<string>;
+    exists: PromiseOrValue<boolean>;
+  };
+
+  export type AssetStructOutput = [
+    string,
+    string,
+    string,
+    BigNumber,
+    string,
+    boolean
+  ] & {
+    cid: string;
+    creator: string;
+    owner: string;
+    price: BigNumber;
+    name: string;
+    exists: boolean;
+  };
+}
+
 export interface AssetRegistryInterface extends utils.Interface {
   functions: {
     "assetCount()": FunctionFragment;
     "assets(uint256)": FunctionFragment;
+    "buyAsset(uint256)": FunctionFragment;
+    "getAllAssets()": FunctionFragment;
     "getAsset(uint256)": FunctionFragment;
     "uploadAsset(string,string,uint256)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "assetCount" | "assets" | "getAsset" | "uploadAsset"
+    nameOrSignatureOrTopic:
+      | "assetCount"
+      | "assets"
+      | "buyAsset"
+      | "getAllAssets"
+      | "getAsset"
+      | "uploadAsset"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -46,6 +82,14 @@ export interface AssetRegistryInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "assets",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "buyAsset",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAllAssets",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getAsset",
@@ -62,6 +106,11 @@ export interface AssetRegistryInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "assetCount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "assets", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "buyAsset", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getAllAssets",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getAsset", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "uploadAsset",
@@ -69,11 +118,26 @@ export interface AssetRegistryInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "AssetSold(uint256,address,address,uint256)": EventFragment;
     "AssetUploaded(uint256,address,string,string,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AssetSold"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AssetUploaded"): EventFragment;
 }
+
+export interface AssetSoldEventObject {
+  id: BigNumber;
+  buyer: string;
+  seller: string;
+  price: BigNumber;
+}
+export type AssetSoldEvent = TypedEvent<
+  [BigNumber, string, string, BigNumber],
+  AssetSoldEventObject
+>;
+
+export type AssetSoldEventFilter = TypedEventFilter<AssetSoldEvent>;
 
 export interface AssetUploadedEventObject {
   id: BigNumber;
@@ -132,6 +196,15 @@ export interface AssetRegistry extends BaseContract {
       }
     >;
 
+    buyAsset(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getAllAssets(
+      overrides?: CallOverrides
+    ): Promise<[AssetRegistry.AssetStructOutput[]]>;
+
     getAsset(
       id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -160,6 +233,15 @@ export interface AssetRegistry extends BaseContract {
       exists: boolean;
     }
   >;
+
+  buyAsset(
+    id: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getAllAssets(
+    overrides?: CallOverrides
+  ): Promise<AssetRegistry.AssetStructOutput[]>;
 
   getAsset(
     id: PromiseOrValue<BigNumberish>,
@@ -190,6 +272,15 @@ export interface AssetRegistry extends BaseContract {
       }
     >;
 
+    buyAsset(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getAllAssets(
+      overrides?: CallOverrides
+    ): Promise<AssetRegistry.AssetStructOutput[]>;
+
     getAsset(
       id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -204,6 +295,19 @@ export interface AssetRegistry extends BaseContract {
   };
 
   filters: {
+    "AssetSold(uint256,address,address,uint256)"(
+      id?: null,
+      buyer?: null,
+      seller?: null,
+      price?: null
+    ): AssetSoldEventFilter;
+    AssetSold(
+      id?: null,
+      buyer?: null,
+      seller?: null,
+      price?: null
+    ): AssetSoldEventFilter;
+
     "AssetUploaded(uint256,address,string,string,uint256)"(
       id?: null,
       creator?: null,
@@ -228,6 +332,13 @@ export interface AssetRegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    buyAsset(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getAllAssets(overrides?: CallOverrides): Promise<BigNumber>;
+
     getAsset(
       id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -248,6 +359,13 @@ export interface AssetRegistry extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    buyAsset(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getAllAssets(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getAsset(
       id: PromiseOrValue<BigNumberish>,
