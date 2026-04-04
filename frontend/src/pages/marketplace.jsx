@@ -1,30 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AssetCard from "../components/AssetCard";
-
-/* ────────────────────────────────────────────────────────────
-   Mock asset data — no API, no blockchain
-   ──────────────────────────────────────────────────────────── */
-const assets = [
-  {
-    id: 1,
-    name: "Abstract Block",
-    price: "0.1",
-    owner: "0xabc123...",
-  },
-  {
-    id: 2,
-    name: "Digital Vault",
-    price: "0.2",
-    owner: "0xdef456...",
-  },
-  {
-    id: 3,
-    name: "Encrypted Node",
-    price: "0.3",
-    owner: "0xghi789...",
-  }
-];
+import { useContract } from "../hooks/Usecontract";
 
 /* ────────────────────────────────────────────────────────────
    Marketplace Page
@@ -32,8 +9,42 @@ const assets = [
 export default function Marketplace() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-
+  const [assets, setAssets] = useState([]);
+  
+  const { getAllAssets } = useContract();
   const currentUser = "0xabc123...";
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        const data = await getAllAssets();
+        if (!data || data.length === 0) {
+          setAssets([]);
+          return;
+        }
+        // Parse structure safely
+        const safeData = data.map((asset, idx) => {
+          if (!asset) console.log("Detected nullish asset at index:", idx);
+          return {
+            ...asset,
+            id: asset?.id || idx + 1,
+            name: asset?.name || "Unknown",
+            cid: asset?.cid || "N/A",
+            price: asset?.price?.toString() || "0",
+            owner: asset?.owner || "N/A",
+          };
+        });
+
+        setAssets(safeData);
+      } catch (err) {
+        console.error(err);
+        setAssets([]);
+      }
+    };
+
+    fetchAssets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* Unique categories from data (filtering out undefined) */
   const categories = ["All", ...new Set(assets.map((a) => a.category).filter(Boolean))];
