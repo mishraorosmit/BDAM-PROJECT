@@ -65,4 +65,54 @@ contract AssetRegistry{
         string name,
         uint256 price
     );
+
+    event AssetSold(
+        uint256 id,
+        address buyer,
+        address seller,
+        uint256 price
+    );
+
+// GETTING ALL ASSETS :
+
+    function getAllAssets() public view returns (Asset[] memory){
+        Asset[] memory allAssets = new Asset[](assetCount);
+        for(uint256 i = 1; i <= assetCount; i++){
+            allAssets[i-1] = assets[i];
+        } 
+        return allAssets;
+    }
+
+// BUYING ASSETS *****************************************************
+
+    function buyAsset(uint256 id) public payable{
+        Asset storage asset = assets[id];
+
+        require(asset.exists, "Asset Does Not Exist!!");
+        require(msg.sender != asset.owner, "Cannot Buy Your Own Asset!!");
+        uint256 price = asset.price;
+        require(msg.value>=price, "Not enough ETH");
+        address seller = asset.owner;
+        uint256 sellerAmout = price/2;
+
+    // PAY SELLER : 
+        (bool sent,) = payable(seller).call{value : sellerAmout}("");
+        require(sent, "Payment to seller failed!!");
+
+    // UPDATE OWNER : 
+        asset.owner = msg.sender;
+
+    // INCREASE PRICE :
+        asset.price = price + (price/2);
+
+    // REFUND EXTRA :
+        if(msg.value > price){
+            uint256 refund = msg.value-price;
+            (bool refunded, ) = payable(msg.sender).call{value : refund}("");
+            require(refunded, "Refund FAILED!!");
+        }
+
+        emit AssetSold(id, msg.sender , seller, price);
+    }
+
 }
