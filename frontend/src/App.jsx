@@ -3,7 +3,7 @@ import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
-    <div className="bg-[#0A0A0A] min-h-screen text-white">
+    <div className="bg-bdam-bg min-h-screen text-white overflow-x-hidden flex flex-col break-words">
       <Navbar />
       <AppRoutes />
     </div>
